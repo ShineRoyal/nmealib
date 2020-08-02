@@ -17,6 +17,7 @@
 #include <stdlib.h>
 
 #include <rtthread.h>
+
 #if defined(NMEA_WIN) && defined(_MSC_VER)
 # pragma warning(disable: 4100) /* unreferenced formal parameter */
 #endif

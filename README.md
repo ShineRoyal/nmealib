@@ -67,3 +67,4 @@ nmea_parse(&parser, (const char *) &data_buffer[0], data_length, &info);
 
 * 维护：ShineRoyal
 * 主页：https://github.com/ShineRoyal/nmealib
+* nmea官网：http://nmea.sourceforge.net/
