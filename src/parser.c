@@ -20,6 +20,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <rtthread.h>
+
 typedef struct _nmeaParserNODE
 {
     int packType;
@@ -48,7 +50,7 @@ int nmea_parser_init(nmeaPARSER *parser)
 
     memset(parser, 0, sizeof(nmeaPARSER));
 
-    if(0 == (parser->buffer = malloc(buff_size)))
+    if(0 == (parser->buffer = rt_malloc(buff_size)))
         nmea_error("Insufficient memory!");
     else
     {
@@ -65,7 +67,7 @@ int nmea_parser_init(nmeaPARSER *parser)
 void nmea_parser_destroy(nmeaPARSER *parser)
 {
     NMEA_ASSERT(parser && parser->buffer);
-    free(parser->buffer);
+    rt_free(parser->buffer);
     nmea_parser_queue_clear(parser);
     memset(parser, 0, sizeof(nmeaPARSER));
 }
@@ -110,7 +112,7 @@ int nmea_parse(
             break;
         };
 
-        free(pack);
+        rt_free(pack);
     }
 
     return nread;
@@ -164,7 +166,7 @@ int nmea_parser_real_push(nmeaPARSER *parser, const char *buff, int buff_sz)
                 (const char *)parser->buffer + nparsed + 1,
                 parser->buff_use - nparsed - 1);
 
-            if(0 == (node = malloc(sizeof(nmeaParserNODE))))
+            if(0 == (node = rt_malloc(sizeof(nmeaParserNODE))))
                 goto mem_fail;
 
             node->pack = 0;
@@ -172,67 +174,67 @@ int nmea_parser_real_push(nmeaPARSER *parser, const char *buff, int buff_sz)
             switch(ptype)
             {
             case GPGGA:
-                if(0 == (node->pack = malloc(sizeof(nmeaGPGGA))))
+                if(0 == (node->pack = rt_malloc(sizeof(nmeaGPGGA))))
                     goto mem_fail;
                 node->packType = GPGGA;
                 if(!nmea_parse_GPGGA(
                     (const char *)parser->buffer + nparsed,
                     sen_sz, (nmeaGPGGA *)node->pack))
                 {
-                    free(node);
+                    rt_free(node);
                     node = 0;
                 }
                 break;
             case GPGSA:
-                if(0 == (node->pack = malloc(sizeof(nmeaGPGSA))))
+                if(0 == (node->pack = rt_malloc(sizeof(nmeaGPGSA))))
                     goto mem_fail;
                 node->packType = GPGSA;
                 if(!nmea_parse_GPGSA(
                     (const char *)parser->buffer + nparsed,
                     sen_sz, (nmeaGPGSA *)node->pack))
                 {
-                    free(node);
+                    rt_free(node);
                     node = 0;
                 }
                 break;
             case GPGSV:
-                if(0 == (node->pack = malloc(sizeof(nmeaGPGSV))))
+                if(0 == (node->pack = rt_malloc(sizeof(nmeaGPGSV))))
                     goto mem_fail;
                 node->packType = GPGSV;
                 if(!nmea_parse_GPGSV(
                     (const char *)parser->buffer + nparsed,
                     sen_sz, (nmeaGPGSV *)node->pack))
                 {
-                    free(node);
+                    rt_free(node);
                     node = 0;
                 }
                 break;
             case GPRMC:
-                if(0 == (node->pack = malloc(sizeof(nmeaGPRMC))))
+                if(0 == (node->pack = rt_malloc(sizeof(nmeaGPRMC))))
                     goto mem_fail;
                 node->packType = GPRMC;
                 if(!nmea_parse_GPRMC(
                     (const char *)parser->buffer + nparsed,
                     sen_sz, (nmeaGPRMC *)node->pack))
                 {
-                    free(node);
+                    rt_free(node);
                     node = 0;
                 }
                 break;
             case GPVTG:
-                if(0 == (node->pack = malloc(sizeof(nmeaGPVTG))))
+                if(0 == (node->pack = rt_malloc(sizeof(nmeaGPVTG))))
                     goto mem_fail;
                 node->packType = GPVTG;
                 if(!nmea_parse_GPVTG(
                     (const char *)parser->buffer + nparsed,
                     sen_sz, (nmeaGPVTG *)node->pack))
                 {
-                    free(node);
+                    rt_free(node);
                     node = 0;
                 }
                 break;
             default:
-                free(node);
+                rt_free(node);
                 node = 0;
                 break;
             };
@@ -255,7 +257,7 @@ int nmea_parser_real_push(nmeaPARSER *parser, const char *buff, int buff_sz)
 
 mem_fail:
     if(node)
-        free(node);
+        rt_free(node);
 
     nmea_error("Insufficient memory!");
 
@@ -324,7 +326,7 @@ int nmea_parser_pop(nmeaPARSER *parser, void **pack_ptr)
         parser->top_node = node->next_node;
         if(!parser->top_node)
             parser->end_node = 0;
-        free(node);
+        rt_free(node);
     }
 
     return retval;
@@ -366,12 +368,12 @@ int nmea_parser_drop(nmeaPARSER *parser)
     if(node)
     {
         if(node->pack)
-            free(node->pack);
+            rt_free(node->pack);
         retval = node->packType;
         parser->top_node = node->next_node;
         if(!parser->top_node)
             parser->end_node = 0;
-        free(node);
+        rt_free(node);
     }
 
     return retval;

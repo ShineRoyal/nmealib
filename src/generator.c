@@ -16,6 +16,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <rtthread.h>
 #if defined(NMEA_WIN) && defined(_MSC_VER)
 # pragma warning(disable: 4100) /* unreferenced formal parameter */
 #endif
@@ -87,7 +88,7 @@ void nmea_gen_destroy(nmeaGENERATOR *gen)
     if(gen->destroy_call)
         (*gen->destroy_call)(gen);
 
-    free(gen);
+    rt_free(gen);
 }
 
 void nmea_gen_add(nmeaGENERATOR *to, nmeaGENERATOR *gen)
@@ -326,7 +327,7 @@ nmeaGENERATOR * __nmea_create_generator(int type, nmeaINFO *info)
     switch(type)
     {
     case NMEA_GEN_NOISE:
-        if(0 == (gen = malloc(sizeof(nmeaGENERATOR))))
+        if(0 == (gen = rt_malloc(sizeof(nmeaGENERATOR))))
             nmea_error("Insufficient memory!");
         else
         {
@@ -338,7 +339,7 @@ nmeaGENERATOR * __nmea_create_generator(int type, nmeaINFO *info)
         break;
     case NMEA_GEN_STATIC:
     case NMEA_GEN_SAT_STATIC:
-        if(0 == (gen = malloc(sizeof(nmeaGENERATOR))))
+        if(0 == (gen = rt_malloc(sizeof(nmeaGENERATOR))))
             nmea_error("Insufficient memory!");
         else
         {
@@ -349,7 +350,7 @@ nmeaGENERATOR * __nmea_create_generator(int type, nmeaINFO *info)
         }
         break;
     case NMEA_GEN_SAT_ROTATE:
-        if(0 == (gen = malloc(sizeof(nmeaGENERATOR))))
+        if(0 == (gen = rt_malloc(sizeof(nmeaGENERATOR))))
             nmea_error("Insufficient memory!");
         else
         {
@@ -360,7 +361,7 @@ nmeaGENERATOR * __nmea_create_generator(int type, nmeaINFO *info)
         }
         break;
     case NMEA_GEN_POS_RANDMOVE:
-        if(0 == (gen = malloc(sizeof(nmeaGENERATOR))))
+        if(0 == (gen = rt_malloc(sizeof(nmeaGENERATOR))))
             nmea_error("Insufficient memory!");
         else
         {
