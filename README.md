@@ -35,7 +35,13 @@ nmealib 遵循 LGPLv2.1 许可，详见 `LICENSE` 文件。
 RT-Thread online packages
     IoT - internet of things --->
         [*] nmealib: A NMEA Library for RT-Thread
+            [*] Enable nmealib uart sample
+            (uart3) uart name e.g. uart3
+            (9600)  uart baudrate used by sample
+            [*] Enable nmealib trace and error
+                Version(v1.0.0)
 ```
+`Enable nmealib uart sample`用于使能串口接收GPS数据并解析的示例，`Enable nmealib trace and error`用于使能DEBUG调试信息。
 
 然后让 RT-Thread 的包管理器自动更新，或者使用 `pkgs --update` 命令更新包到 BSP 中。
 
@@ -61,7 +67,8 @@ nmea_parse(&parser, (const char *) &data_buffer[0], data_length, &info);
 
 ## 4、注意事项
 
-无
+nmealib库仅支持`GPGGA`、`GPGSA`、`GPGSV`、`GPRMC`、`GPVTG`语句的解析。
+某些支持多卫星GPS模块，其输出可能是混合输出，此时无法完成正确解析。
 
 ## 5、联系方式 & 感谢
 
