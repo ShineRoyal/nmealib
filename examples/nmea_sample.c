@@ -54,6 +54,7 @@ static rt_err_t uart_input(rt_device_t dev, rt_size_t size)
  * @param  str: 要输出的字符串，str_size:数据长度
  * @retval 无
  */
+#ifdef NMEALIB_DEBUG
 static void trace(const char *str, int str_size)
 {
     rt_kprintf("\nnmea trace:");
@@ -61,19 +62,23 @@ static void trace(const char *str, int str_size)
         rt_kprintf("%c", str[i]);
     rt_kprintf("\n");
 }
+#endif
 
 /**
  * @brief  error 在解码出错时输出提示消息
  * @param  str: 要输出的字符串，str_size:数据长度
  * @retval 无
  */
+#ifdef NMEALIB_DEBUG
 static void error(const char *str, int str_size)
 {
+
     rt_kprintf("\nnmea error:");
     for (int i = 0; i < str_size; i++)
         rt_kprintf("%c", str[i]);
     rt_kprintf("\n");
 }
+#endif
 
 static void nmea_thread_entry(void *parameter)
 {
@@ -89,10 +94,10 @@ static void nmea_thread_entry(void *parameter)
 
     nmeaINFO info;          //GPS解码后得到的信息
     nmeaPARSER parser;      //解码时使用的数据结构
-
+#ifdef NMEALIB_DEBUG
     nmea_property()->trace_func = &trace;
     nmea_property()->error_func = &error;
-
+#endif
     nmea_zero_INFO(&info);
     nmea_parser_init(&parser);
 
