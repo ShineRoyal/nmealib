@@ -21,7 +21,7 @@
 
 #include "nmea/nmea.h"
 
-/* ´®¿Ú½ÓÊÕÏûÏ¢½á¹¹*/
+/* ä¸²å£æ¥æ”¶æ¶ˆæ¯ç»“æ„*/
 struct rx_msg
 {
     rt_device_t dev;
@@ -31,7 +31,7 @@ struct rx_msg
 static rt_device_t serial;
 static struct rt_messagequeue rx_mq;
 
-/* ½ÓÊÕÊı¾İ»Øµ÷º¯Êı */
+/* æ¥æ”¶æ•°æ®å›è°ƒå‡½æ•° */
 static rt_err_t uart_input(rt_device_t dev, rt_size_t size)
 {
     struct rx_msg msg;
@@ -42,17 +42,17 @@ static rt_err_t uart_input(rt_device_t dev, rt_size_t size)
     result = rt_mq_send(&rx_mq, &msg, sizeof(msg));
     if (result == -RT_EFULL)
     {
-        /* ÏûÏ¢¶ÓÁĞÂú */
-        rt_kprintf("message queue full£¡\n");
+        /* æ¶ˆæ¯é˜Ÿåˆ—æ»¡ */
+        rt_kprintf("message queue fullï¼\n");
     }
     return result;
 }
 
 //#define __GPS_DEBUG
 /**
- * @brief  trace ÔÚ½âÂëÊ±Êä³ö²¶»ñµÄGPSÓï¾ä
- * @param  str: ÒªÊä³öµÄ×Ö·û´®£¬str_size:Êı¾İ³¤¶È
- * @retval ÎŞ
+ * @brief  trace åœ¨è§£ç æ—¶è¾“å‡ºæ•è·çš„GPSè¯­å¥
+ * @param  str: è¦è¾“å‡ºçš„å­—ç¬¦ä¸²ï¼Œstr_size:æ•°æ®é•¿åº¦
+ * @retval æ— 
  */
 static void trace(const char *str, int str_size)
 {
@@ -63,9 +63,9 @@ static void trace(const char *str, int str_size)
 }
 
 /**
- * @brief  error ÔÚ½âÂë³ö´íÊ±Êä³öÌáÊ¾ÏûÏ¢
- * @param  str: ÒªÊä³öµÄ×Ö·û´®£¬str_size:Êı¾İ³¤¶È
- * @retval ÎŞ
+ * @brief  error åœ¨è§£ç å‡ºé”™æ—¶è¾“å‡ºæç¤ºæ¶ˆæ¯
+ * @param  str: è¦è¾“å‡ºçš„å­—ç¬¦ä¸²ï¼Œstr_size:æ•°æ®é•¿åº¦
+ * @retval æ— 
  */
 static void error(const char *str, int str_size)
 {
@@ -82,13 +82,13 @@ static void nmea_thread_entry(void *parameter)
     rt_uint32_t rx_length;
     static char rx_buffer[RT_SERIAL_RB_BUFSZ + 1];
 
-    char ss[128];   //´òÓ¡×Ö·û´®buffer
+    char ss[128];   //æ‰“å°å­—ç¬¦ä¸²buffer
 
-    double deg_lat; //×ª»»³É[degree].[degree]¸ñÊ½µÄÎ³¶È
-    double deg_lon; //×ª»»³É[degree].[degree]¸ñÊ½µÄ¾­¶È
+    double deg_lat; //è½¬æ¢æˆ[degree].[degree]æ ¼å¼çš„çº¬åº¦
+    double deg_lon; //è½¬æ¢æˆ[degree].[degree]æ ¼å¼çš„ç»åº¦
 
-    nmeaINFO info;          //GPS½âÂëºóµÃµ½µÄĞÅÏ¢
-    nmeaPARSER parser;      //½âÂëÊ±Ê¹ÓÃµÄÊı¾İ½á¹¹
+    nmeaINFO info;          //GPSè§£ç åå¾—åˆ°çš„ä¿¡æ¯
+    nmeaPARSER parser;      //è§£ç æ—¶ä½¿ç”¨çš„æ•°æ®ç»“æ„
 
     nmea_property()->trace_func = &trace;
     nmea_property()->error_func = &error;
@@ -99,23 +99,23 @@ static void nmea_thread_entry(void *parameter)
     while (1)
     {
         rt_memset(&msg, 0, sizeof(msg));
-        /* ´ÓÏûÏ¢¶ÓÁĞÖĞ¶ÁÈ¡ÏûÏ¢*/
+        /* ä»æ¶ˆæ¯é˜Ÿåˆ—ä¸­è¯»å–æ¶ˆæ¯*/
         result = rt_mq_recv(&rx_mq, &msg, sizeof(msg), RT_WAITING_FOREVER);
         if (result == RT_EOK)
         {
-            /* ´Ó´®¿Ú¶ÁÈ¡Êı¾İ*/
+            /* ä»ä¸²å£è¯»å–æ•°æ®*/
             rx_length = rt_device_read(msg.dev, 0, rx_buffer, msg.size);
             rx_buffer[rx_length] = '\0';
 
             nmea_parse(&parser, (const char *) &rx_buffer[0], rx_length, &info);
 
-            //info.lat lonÖĞµÄ¸ñÊ½Îª[degree][min].[sec/60]£¬Ê¹ÓÃÒÔÏÂº¯Êı×ª»»³É[degree].[degree]¸ñÊ½
+            //info.lat lonä¸­çš„æ ¼å¼ä¸º[degree][min].[sec/60]ï¼Œä½¿ç”¨ä»¥ä¸‹å‡½æ•°è½¬æ¢æˆ[degree].[degree]æ ¼å¼
             deg_lat = nmea_ndeg2degree(info.lat);
             deg_lon = nmea_ndeg2degree(info.lon);
 
             LOG_D("utc_time:%d-%02d-%02d,%d:%d:%d ", info.utc.year + 1900, info.utc.mon + 1, info.utc.day,
                     info.utc.hour, info.utc.min, info.utc.sec);
-            //ÒòÎªLOG_D²»Ö§³Ö¸¡µãÊı£¬ËùÒÔ´Ë´¦Ê¹ÓÃsnprintf½øĞĞ´òÓ¡£¬ÔÙÓÃLOG_DÊä³ö
+            //å› ä¸ºLOG_Dä¸æ”¯æŒæµ®ç‚¹æ•°ï¼Œæ‰€ä»¥æ­¤å¤„ä½¿ç”¨snprintfè¿›è¡Œæ‰“å°ï¼Œå†ç”¨LOG_Dè¾“å‡º
             snprintf(ss, 128, "wd:%f,jd:%f", deg_lat, deg_lon);
             LOG_D(ss);
             snprintf(ss, 128, "high:%f m", info.elv);
@@ -139,20 +139,20 @@ static int nmea_thread_init(int argc, char *argv[])
     static char msg_pool[256];
     static char up_msg_pool[256];
     struct serial_configure config = RT_SERIAL_CONFIG_DEFAULT;
-    /* ²éÕÒ´®¿ÚÉè±¸ */
+    /* æŸ¥æ‰¾ä¸²å£è®¾å¤‡ */
     serial = rt_device_find(NMEALIB_UART_PORT);
-    /* ³õÊ¼»¯ÏûÏ¢¶ÓÁĞ */
+    /* åˆå§‹åŒ–æ¶ˆæ¯é˜Ÿåˆ— */
     rt_mq_init(&rx_mq, "rx_mq", msg_pool, sizeof(struct rx_msg), sizeof(msg_pool), RT_IPC_FLAG_FIFO);
-    //ĞŞ¸Ä²¨ÌØÂÊÎª9600
+    //ä¿®æ”¹æ³¢ç‰¹ç‡ä¸º9600
     config.baud_rate = NMEALIB_UART_BAUDRATE;
     rt_device_control(serial, RT_DEVICE_CTRL_CONFIG, &config);
 
-    rt_device_open(serial, RT_DEVICE_FLAG_DMA_RX); /* ÒÔ DMA ½ÓÊÕ¼°ÂÖÑ¯·¢ËÍ·½Ê½´ò¿ª´®¿ÚÉè±¸ */
-    rt_device_set_rx_indicate(serial, uart_input); /* ÉèÖÃ½ÓÊÕ»Øµ÷º¯Êı */
+    rt_device_open(serial, RT_DEVICE_FLAG_DMA_RX); /* ä»¥ DMA æ¥æ”¶åŠè½®è¯¢å‘é€æ–¹å¼æ‰“å¼€ä¸²å£è®¾å¤‡ */
+    rt_device_set_rx_indicate(serial, uart_input); /* è®¾ç½®æ¥æ”¶å›è°ƒå‡½æ•° */
 
-    rt_thread_t thread = rt_thread_create("nmea", nmea_thread_entry, RT_NULL, 4096, 25, 10); /* ´´½¨ serial Ïß³Ì */
+    rt_thread_t thread = rt_thread_create("nmea", nmea_thread_entry, RT_NULL, 4096, 25, 10); /* åˆ›å»º serial çº¿ç¨‹ */
 
-    /* ´´½¨³É¹¦ÔòÆô¶¯Ïß³Ì */
+    /* åˆ›å»ºæˆåŠŸåˆ™å¯åŠ¨çº¿ç¨‹ */
     if (thread != RT_NULL)
     {
         rt_thread_startup(thread);
@@ -164,6 +164,6 @@ static int nmea_thread_init(int argc, char *argv[])
 
     return ret;
 }
-/* µ¼³öµ½ msh ÃüÁîÁĞ±íÖĞ */
+/* å¯¼å‡ºåˆ° msh å‘½ä»¤åˆ—è¡¨ä¸­ */
 MSH_CMD_EXPORT(nmea_thread_init, nmea thread init);
 INIT_APP_EXPORT(nmea_thread_init);
